@@ -20,7 +20,7 @@ env.config();
 const PORT =process.env.PORT;
 
 app.use(cors({
-    origin: "https://your-frontend.netlify.app",
+    origin: "https://devclan-frontend.netlify.app",
     credentials: true,
 }));
 
