@@ -1,4 +1,5 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
+import { apiFetch } from "../../api";
 
 export default function PostCard({ post, currentUserId }) {
   const [score, setScore] = useState(post.score || 0);
@@ -16,10 +17,9 @@ export default function PostCard({ post, currentUserId }) {
     setScore((prev) => prev + delta);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/posts/${post.id}/vote`, {
+      const res = await apiFetch(`/api/posts/${post.id}/vote`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ direction: nextVote, userId: currentUserId }),
+        body: JSON.stringify({ direction: nextVote }),
       });
 
       if (!res.ok) throw new Error("Server returned vote error");

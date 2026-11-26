@@ -18,7 +18,7 @@ function ShimmerBlock({ className }) {
 
 export default function PostCardSkeleton() {
   return (
-    <div className="rounded-card border border-border bg-surface p-4">
+    <div className="rounded-lg border border-clan-border bg-clan-surface p-4">
       <div className="flex gap-3">
         <div className="flex flex-col items-center gap-2 pt-1">
           <ShimmerBlock className="h-5 w-5" />
