@@ -2,8 +2,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import FeedSwitcher from "./FeedSwitcher";
 import PostCard from "./PostCard";
 import PostCardSkeleton from "./PostCardSkeleton";
+import { apiFetch } from "../../api";
 
-export default function Feed({ currentUserId }) {
+// `currentUserId` and `refreshKey` are in the effect's dependencies so switching the demo user
+// or publishing a post reloads the feed from the first page.
+export default function Feed({ currentUserId, refreshKey = 0 }) {
   const [tab, setTab] = useState("hot");
   const [posts, setPosts] = useState([]);
   const [cursor, setCursor] = useState("+inf");
@@ -12,7 +15,8 @@ export default function Feed({ currentUserId }) {
 
   const fetchFeed = useCallback(
     async (isInitial = false) => {
-      if (isLoading || (!hasMore && !isInitial)) return;
+      if (isLoading && !isInitial) return;
+      if (!hasMore && !isInitial) return;
       setIsLoading(true);
 
       const activeCursor = isInitial ? "+inf" : cursor;
@@ -22,10 +26,9 @@ export default function Feed({ currentUserId }) {
           type: tab,
           cursor: activeCursor,
           limit: "15",
-          userId: currentUserId || "",
         });
 
-        const res = await fetch(`/api/posts/feed?${queryParams.toString()}`);
+        const res = await apiFetch(`/api/posts/feed?${queryParams.toString()}`);
         if (!res.ok) throw new Error("Failed to load feed");
 
         const data = await res.json();
@@ -40,7 +43,7 @@ export default function Feed({ currentUserId }) {
         setIsLoading(false);
       }
     },
-    [tab, cursor, hasMore, isLoading, currentUserId]
+    [tab, cursor, hasMore, isLoading]
   );
 
   useEffect(() => {
@@ -48,7 +51,8 @@ export default function Feed({ currentUserId }) {
     setCursor("+inf");
     setHasMore(true);
     fetchFeed(true);
-  }, [tab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, currentUserId, refreshKey]);
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
@@ -56,7 +60,7 @@ export default function Feed({ currentUserId }) {
 
       <div className="space-y-3">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} currentUserId={currentUserId} />
+          <PostCard key={`${currentUserId}:${post.id}`} post={post} currentUserId={currentUserId} />
         ))}
 
         {isLoading && (
@@ -68,7 +72,9 @@ export default function Feed({ currentUserId }) {
 
         {!isLoading && posts.length === 0 && (
           <div className="text-center py-12 text-slate-400 bg-clan-surface rounded-lg border border-clan-border">
-            No posts found in this tab yet.
+            {tab === "following"
+              ? "Nothing here yet. Follow someone in the People panel, or publish a post."
+              : "No posts found in this tab yet."}
           </div>
         )}
 
